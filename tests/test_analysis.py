@@ -4,7 +4,7 @@ import tempfile
 
 import pandas as pd
 
-from src.analysis import count_by_confidence, count_by_theme, filtered_csv_bytes
+from src.analysis import count_by_confidence, count_by_theme, filtered_csv_bytes, monthly_counts
 from src.data_loader import filter_evidence, load_evidence_csv
 from src.recommendations import get_recommendations
 
@@ -108,6 +108,14 @@ def test_filter_by_theme_and_confidence():
     assert list(filtered["evidence_id"]) == ["MIS-004"]
 
 
+def test_empty_filter_selection_returns_no_records():
+    df = _sample_data()
+
+    assert filter_evidence(df, themes=[]).empty
+    assert filter_evidence(df, confidences=[]).empty
+    assert filter_evidence(df, statuses=[]).empty
+
+
 def test_theme_and_confidence_aggregation():
     df = _sample_data()
 
@@ -119,6 +127,27 @@ def test_theme_and_confidence_aggregation():
     assert theme_counts["theme"].str.contains("Check-in / no-show clarity").any()
 
 
+def test_monthly_counts_aggregate_by_calendar_month():
+    df = _sample_data()
+    df.loc[len(df)] = {
+        "evidence_id": "MIS-005",
+        "date_shown": "2026-07-31",
+        "source_locale": "English listing",
+        "theme": "GPS / ETA reliability",
+        "reported_signal_summary": "Another July signal.",
+        "theme_coding_confidence": "Medium",
+        "limitations": "Sample only.",
+        "source_url": "https://example.com/review-5",
+        "validation_status": "Needs internal validation",
+    }
+    df["date_shown"] = pd.to_datetime(df["date_shown"], errors="coerce")
+
+    counts = monthly_counts(df)
+
+    assert list(counts["calendar_month"]) == ["2026-06", "2026-07"]
+    assert list(counts["evidence_rows"]) == [1, 3]
+
+
 def test_missing_dates_and_urls_are_handled():
     df = _sample_data()
     with tempfile.NamedTemporaryFile(suffix=".csv", mode="w", encoding="utf-8", delete=False) as handle:
@@ -128,6 +157,7 @@ def test_missing_dates_and_urls_are_handled():
     loaded = load_evidence_csv(path)
     assert pd.isna(loaded.at[2, "date_shown"])
     assert loaded.at[2, "source_url"] == ""
+    assert loaded.at[0, "source_url"].startswith("https://")
 
 
 def test_filtered_csv_export_only_includes_filtered_rows():
@@ -143,8 +173,10 @@ def test_filtered_csv_export_only_includes_filtered_rows():
 def test_recommendations_reference_known_ids_or_are_pending():
     df = _sample_data()
     recs = get_recommendations(df)
+    available_ids = set(df["evidence_id"])
     for rec in recs:
-        for evidence_id in rec["evidence_ids"]:
-            assert evidence_id in df["evidence_id"].values or bool(rec["pending_evidence_ids"])
+        assert set(rec["matched_evidence_ids"]).issubset(available_ids)
+        assert set(rec["matched_evidence_ids"]).isdisjoint(rec["pending_evidence_ids"])
+        assert set(rec["matched_evidence_ids"]) | set(rec["pending_evidence_ids"]) == set(rec["evidence_ids"])
 
     assert any(rec["evidence_status"] == "Pending verification" for rec in recs)

@@ -28,11 +28,11 @@ def count_by_confidence(df: pd.DataFrame) -> pd.DataFrame:
 
 def monthly_counts(df: pd.DataFrame) -> pd.DataFrame:
     if df.empty or df["date_shown"].notna().sum() == 0:
-        return pd.DataFrame(columns=["month", "evidence_rows"])
-    monthly = df.loc[df["date_shown"].notna(), "date_shown"].dt.to_period("M")
-    counts = monthly.value_counts().sort_index().reset_index()
-    counts.columns = ["month", "evidence_rows"]
-    counts["month"] = counts["month"].astype(str)
+        return pd.DataFrame(columns=["calendar_month", "evidence_rows"])
+    calendar_months = df.loc[df["date_shown"].notna(), "date_shown"].dt.to_period("M")
+    counts = calendar_months.value_counts().sort_index().reset_index()
+    counts.columns = ["calendar_month", "evidence_rows"]
+    counts["calendar_month"] = counts["calendar_month"].astype(str)
     return counts
 
 

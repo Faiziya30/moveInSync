@@ -97,11 +97,11 @@ def filter_evidence(
         )
         filtered = filtered[searchable.str.contains(query, case=False, na=False)].copy()
 
-    if themes:
+    if themes is not None:
         filtered = filtered[filtered["theme"].isin(themes)].copy()
-    if confidences:
+    if confidences is not None:
         filtered = filtered[filtered["theme_coding_confidence"].isin(confidences)].copy()
-    if statuses:
+    if statuses is not None:
         filtered = filtered[filtered["validation_status"].isin(statuses)].copy()
 
     return filtered.reset_index(drop=True)

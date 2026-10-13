@@ -26,12 +26,12 @@ For employee transport products, confusion around booking steps, inconsistent tr
 ## Features
 
 - Evidence CSV validation with clear failures for missing fields, empty files, and malformed input
-- Search and filtering by theme, confidence, validation status, and date range
+- Search and filtering by theme, classification confidence, source/validation status, and date range
 - Executive summary cards that describe only the loaded sample
 - Theme and confidence charts that are clearly labelled as sample counts
-- Readable evidence table with source links and a visible caveat column
+- Compact evidence table with selectable record-level details, source links, and visible caveats
 - Downloadable filtered CSV export
-- Recommendation cards traced to evidence IDs and explicitly labelled as requiring validation
+- Six recommendation cards traced to evidence IDs and explicitly labelled as requiring validation
 - Dedicated methodology and limitations section
 
 ## Architecture and data flow
@@ -136,10 +136,11 @@ Important limitations:
 The dashboard includes evidence-linked recommendations in the following areas:
 
 1. Clarify booking states and confirmation
-2. Prioritise the employee's assigned trip and communicate location freshness
-3. Make check-in and no-show outcomes timely, understandable, and contestable
-4. Create actionable exception notifications
-5. Connect review themes to support tickets and operational evidence
+2. Prioritise the employee's assigned vehicle
+3. Improve GPS and location freshness communication
+4. Make check-in and no-show outcomes timely, understandable, and contestable
+5. Create actionable exception notifications
+6. Connect review themes to support tickets and operational evidence
 
 Each recommendation includes:
 
@@ -150,7 +151,7 @@ Each recommendation includes:
 - risks and guardrails
 - validation status
 
-These recommendations are explicitly framed as candidate actions requiring validation, not implemented changes to MoveInSync.
+These recommendations are explicitly framed as candidate actions requiring validation, not implemented changes to MoveInSync. The evidence explorer keeps source verification status separate from confidence in the theme classification.
 
 ## Screenshots
 
@@ -159,7 +160,7 @@ This repository is intentionally structured so you can add genuine screenshots l
 Suggested workflow:
 
 1. Run `streamlit run app.py`.
-2. Use the browser to capture a screenshot of the executive overview.
+2. Use the browser to capture a screenshot of the overview, compact evidence table, or record details section.
 3. Save images under a `screenshots/` folder.
 4. Add them to the README only when they reflect the current project state.
 
